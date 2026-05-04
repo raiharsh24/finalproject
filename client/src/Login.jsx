@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { saveToken } from "./utils/auth";
 
@@ -23,7 +23,20 @@ export default function Login({ onLogin }) {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const [timer, setTimer] = useState(0);
+
   const blobs = generateBlobs(8);
+
+  /* ================= TIMER ================= */
+  useEffect(() => {
+    let interval;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timer]);
 
   /* ================= LOGIN ================= */
   const handleLogin = async (e) => {
@@ -66,11 +79,20 @@ export default function Login({ onLogin }) {
       const res = await fetch("http://localhost:5000/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({
+          email,
+          mode: mode === "signup" ? "signup" : "forgot",
+        }),
       });
 
       const data = await res.json();
-      setMessage(data.message);
+
+      if (res.ok) {
+        setMessage(data.message);
+        setTimer(60);
+      } else {
+        setMessage(data.message);
+      }
     } catch {
       setMessage("Failed to send OTP");
     } finally {
@@ -100,6 +122,7 @@ export default function Login({ onLogin }) {
       if (res.ok) {
         setMessage("Signup successful!");
         setMode("login");
+        setTimer(0);
       } else {
         setMessage(data.message);
       }
@@ -130,8 +153,9 @@ export default function Login({ onLogin }) {
       const data = await res.json();
 
       if (res.ok) {
-        setMessage("Password updated! Login now.");
+        setMessage("Password updated!");
         setMode("login");
+        setTimer(0);
       } else {
         setMessage(data.message);
       }
@@ -187,7 +211,6 @@ export default function Login({ onLogin }) {
             }
             className="login-form"
           >
-            {/* EMAIL */}
             <input
               type="email"
               placeholder="Email"
@@ -196,7 +219,6 @@ export default function Login({ onLogin }) {
               required
             />
 
-            {/* OTP */}
             {mode !== "login" && (
               <input
                 placeholder="OTP"
@@ -205,7 +227,6 @@ export default function Login({ onLogin }) {
               />
             )}
 
-            {/* PASSWORD */}
             <input
               type="password"
               placeholder={
@@ -228,14 +249,17 @@ export default function Login({ onLogin }) {
                 : "Reset Password"}
             </button>
 
-            {/* SEND OTP */}
+            {/* OTP BUTTON WITH MODE */}
             {mode !== "login" && (
               <button
                 type="button"
                 className="login-submit"
                 onClick={handleSendOtp}
+                disabled={timer > 0}
               >
-                Send OTP
+                {timer > 0
+                  ? `Resend in ${timer}s`
+                  : "Send OTP"}
               </button>
             )}
           </form>

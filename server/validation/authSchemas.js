@@ -15,9 +15,10 @@ const loginSchema = Joi.object({
   password: Joi.string().required(),
 });
 
-// Send OTP schema
+// ✅ UPDATED: Send OTP schema (CRITICAL FIX)
 const sendOtpSchema = Joi.object({
   email: Joi.string().email().required(),
+  mode: Joi.string().valid('signup', 'forgot').required(),
 });
 
 // Verify OTP schema
