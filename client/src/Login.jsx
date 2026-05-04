@@ -66,7 +66,10 @@ export default function Login({ onLogin }) {
       const res = await fetch("http://localhost:5000/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({
+          email,
+          mode: mode === "signup" ? "signup" : "forgot", // ✅ FIXED
+        }),
       });
 
       const data = await res.json();
@@ -187,7 +190,6 @@ export default function Login({ onLogin }) {
             }
             className="login-form"
           >
-            {/* EMAIL */}
             <input
               type="email"
               placeholder="Email"
@@ -196,7 +198,6 @@ export default function Login({ onLogin }) {
               required
             />
 
-            {/* OTP */}
             {mode !== "login" && (
               <input
                 placeholder="OTP"
@@ -205,7 +206,6 @@ export default function Login({ onLogin }) {
               />
             )}
 
-            {/* PASSWORD */}
             <input
               type="password"
               placeholder={
@@ -228,7 +228,6 @@ export default function Login({ onLogin }) {
                 : "Reset Password"}
             </button>
 
-            {/* SEND OTP */}
             {mode !== "login" && (
               <button
                 type="button"
