@@ -1,14 +1,6 @@
-const executeCpp = require("../compiler/executeCpp");
-const executePython = require("../compiler/executePython");
-const executeNode = require("../compiler/executeNode");
-const executeJava = require("../compiler/executeJava");
-const Submission = require("../models/Submission");
-
-/* ---------------- RUN CODE ---------------- */
-
 const codeService = require('../services/codeService');
 
-// Controllers delegate to the service layer and rely on central error handling.
+/* ---------------- RUN CODE ---------------- */
 
 exports.runCode = async (req, res, next) => {
   try {
@@ -19,12 +11,35 @@ exports.runCode = async (req, res, next) => {
   }
 };
 
+/* ---------------- SUBMIT CODE (REAL JUDGE) ---------------- */
+
 exports.submitCode = async (req, res, next) => {
   try {
-    // Attach userId if authenticated (assuming auth middleware adds req.user)
-    const payload = { ...req.body, userId: req.user ? req.user.id : undefined };
+    const { code, language, problem } = req.body;
+
+    // ✅ Basic validation (IMPORTANT for judge stability)
+    if (!code || !language || !problem) {
+      return res.status(400).json({
+        success: false,
+        message: "Code, language and problem are required",
+      });
+    }
+
+    // ✅ Attach userId if available
+    const payload = {
+      code,
+      language,
+      problem,
+      userId: req.user ? req.user.id : null,
+    };
+
     const result = await codeService.submitCode(payload);
-    res.json(result);
+
+    return res.json({
+      success: true,
+      ...result,
+    });
+
   } catch (err) {
     next(err);
   }

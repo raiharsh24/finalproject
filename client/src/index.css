@@ -2,230 +2,433 @@
 @tailwind components;
 @tailwind utilities;
 
-:root,
-html,
-body,
-#root {
-  min-height: 100%;
+/* ================= GLOBAL THEME ================= */
+
+:root {
+  --primary: #ef4444;
+  --primary-hover: #dc2626;
+
+  --sidebar-bg: #020617;
+  --sidebar-active: #dc2626;
+
+  --page-bg: #f1f5f9;
+  --card-bg: #ffffff;
+
+  --sidebar-text: #cbd5e1;
+
+  --border-divider: #e2e8f0;
+
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
 }
 
-* {
-  box-sizing: border-box;
-}
+/* ================= BODY ================= */
 
 body {
   margin: 0;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #05070f;
+  padding: 0;
+  background: var(--page-bg);
+  font-family: Inter, sans-serif;
+  color: #0f172a;
+  overflow-x: hidden;
 }
 
-/* ================= LOGIN PAGE ================= */
+/* ================= SCROLLBAR ================= */
 
-.login-page {
-  position: relative;
-  min-height: 100vh;
-  background: radial-gradient(circle at top left, rgba(96, 165, 250, 0.18), transparent 24%),
-    radial-gradient(circle at bottom right, rgba(168, 85, 247, 0.14), transparent 28%),
-    linear-gradient(160deg, #05070f 0%, #0b1220 100%);
-  color: white;
-  overflow: hidden;
+::-webkit-scrollbar {
+  width: 8px;
 }
 
-.login-background {
-  position: absolute;
-  inset: 0;
-  background: rgba(3, 9, 25, 0.8);
+::-webkit-scrollbar-track {
+  background: #111827;
 }
 
-.login-bubble {
-  position: absolute;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.08);
-  filter: blur(16px);
-  box-shadow: 0 0 80px rgba(255, 255, 255, 0.08);
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    to bottom,
+    #ef4444,
+    #dc2626
+  );
+
+  border-radius: 999px;
 }
 
-.login-card-wrapper {
-  position: relative;
-  z-index: 10;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 24px;
+/* ================= SIDEBAR ================= */
+
+aside {
+  background:
+    linear-gradient(
+      180deg,
+      #020617 0%,
+      #0f172a 100%
+    ) !important;
+
+  border-right:
+    1px solid rgba(255,255,255,0.05);
 }
 
-.login-card {
-  position: relative;
-  width: min(100%, 540px);
-  border-radius: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(30px);
-  padding: 48px 40px;
-  overflow: hidden;
+/* Sidebar logo */
+
+aside span {
+  letter-spacing: 0.3px;
 }
 
-.login-card-glow {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(80px);
-  opacity: 0.5;
+/* Sidebar items */
+
+aside nav a {
+  transition:
+    all 0.25s ease !important;
+
+  margin-bottom: 6px;
+
+  border: 1px solid transparent;
+
+  border-radius: 14px !important;
 }
 
-.login-card-glow-left {
-  left: -80px;
-  top: -80px;
-  width: 200px;
-  height: 200px;
-  background: rgba(56, 189, 248, 0.2);
+/* Hover */
+
+aside nav a:hover {
+  background:
+    rgba(239,68,68,0.12) !important;
+
+  transform:
+    translateX(6px);
+
+  border-color:
+    rgba(239,68,68,0.25);
+
+  box-shadow:
+    0 6px 18px rgba(239,68,68,0.12);
 }
 
-.login-card-glow-right {
-  right: -80px;
-  bottom: -80px;
-  width: 220px;
-  height: 220px;
-  background: rgba(168, 85, 247, 0.22);
+/* Active */
+
+aside nav a.active {
+  background:
+    linear-gradient(
+      90deg,
+      #ef4444,
+      #dc2626
+    ) !important;
+
+  color: white !important;
+
+  box-shadow:
+    0 8px 20px rgba(239,68,68,0.35);
 }
 
-.login-header {
-  position: relative;
-  z-index: 1;
-  text-align: center;
+/* Bottom buttons */
+
+aside button:hover {
+  background:
+    rgba(239,68,68,0.12) !important;
+
+  transform:
+    translateX(5px);
 }
 
-.login-label {
-  display: inline-block;
-  font-size: 0.8rem;
-  letter-spacing: 0.35em;
-  text-transform: uppercase;
-  color: #94a3b8;
+/* ================= NAVBAR ================= */
+
+header {
+  background:
+    rgba(255,255,255,0.82) !important;
+
+  backdrop-filter:
+    blur(12px);
+
+  border-bottom:
+    1px solid rgba(0,0,0,0.05);
+
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.04);
 }
 
-.login-header h1 {
-  margin-top: 18px;
-  font-size: clamp(2rem, 3vw, 2.8rem);
-  font-weight: 700;
-  color: #f8fafc;
+/* ================= SEARCH BAR ================= */
+
+input[type="text"],
+input[type="date"],
+input[type="time"],
+textarea,
+select {
+  transition:
+    all 0.25s ease;
+
+  border:
+    1px solid #dbe3ee;
 }
 
-.login-header p {
-  margin-top: 12px;
-  color: #cbd5e1;
-  font-size: 0.95rem;
-  line-height: 1.7;
-}
+/* Focus */
 
-.login-form {
-  margin-top: 40px;
-  display: grid;
-  gap: 22px;
-  position: relative;
-  z-index: 1;
-}
-
-.login-form label {
-  display: grid;
-  gap: 10px;
-  font-size: 0.95rem;
-  color: #cbd5e1;
-}
-
-.login-form span {
-  display: block;
-}
-
-.login-form input {
-  width: 100%;
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
-  padding: 16px 18px;
-  color: #f8fafc;
-  font-size: 1rem;
+input:focus,
+textarea:focus,
+select:focus {
   outline: none;
-  transition: border-color 0.2s ease, background 0.2s ease;
+
+  border-color:
+    #ef4444 !important;
+
+  box-shadow:
+    0 0 0 4px rgba(239,68,68,0.12);
 }
 
-.login-form input::placeholder {
-  color: rgba(203, 213, 225, 0.7);
+/* ================= MAIN CONTENT ================= */
+
+main {
+  background:
+    linear-gradient(
+      180deg,
+      #f8fafc 0%,
+      #eef2ff 100%
+    );
 }
 
-.login-form input:focus {
-  border-color: rgba(56, 189, 248, 0.6);
-  background: rgba(255, 255, 255, 0.12);
+/* ================= CARDS ================= */
+
+.bg-card-bg,
+.bg-white {
+  border-radius: 20px !important;
+
+  border:
+    1px solid rgba(0,0,0,0.04);
+
+  box-shadow:
+    0 8px 25px rgba(15,23,42,0.05);
+
+  transition:
+    all 0.3s ease;
 }
 
-.login-submit {
-  width: 100%;
-  margin-top: 4px;
-  border-radius: 24px;
+/* Card hover */
+
+.bg-card-bg:hover,
+.bg-white:hover {
+  transform:
+    translateY(-6px);
+
+  box-shadow:
+    0 20px 40px rgba(15,23,42,0.12);
+}
+
+/* ================= BUTTONS ================= */
+
+button {
+  transition:
+    all 0.25s ease !important;
+
+  border-radius: 12px !important;
+}
+
+/* Primary */
+
+.bg-primary,
+button.bg-primary {
+  background:
+    linear-gradient(
+      135deg,
+      #ef4444,
+      #dc2626
+    ) !important;
+
+  color: white !important;
+
   border: none;
-  padding: 16px 22px;
-  font-size: 1rem;
+}
+
+/* Hover */
+
+.bg-primary:hover,
+button.bg-primary:hover {
+  transform:
+    translateY(-2px);
+
+  box-shadow:
+    0 12px 24px rgba(239,68,68,0.35);
+}
+
+/* Secondary */
+
+.border-primary {
+  border-color:
+    #ef4444 !important;
+}
+
+.text-primary {
+  color:
+    #ef4444 !important;
+}
+
+.border-primary:hover {
+  background:
+    #ef4444 !important;
+
+  color:
+    white !important;
+}
+
+/* Click */
+
+button:active {
+  transform:
+    scale(0.96);
+}
+
+/* ================= TABLES ================= */
+
+table {
+  border-collapse: collapse;
+}
+
+/* Table header */
+
+thead {
+  background:
+    linear-gradient(
+      90deg,
+      #f8fafc,
+      #f1f5f9
+    ) !important;
+}
+
+/* Rows */
+
+tbody tr {
+  transition:
+    all 0.2s ease;
+}
+
+/* Hover */
+
+tbody tr:hover {
+  background:
+    rgba(239,68,68,0.04) !important;
+}
+
+/* ================= STATUS BADGES ================= */
+
+.bg-green-100 {
+  background:
+    rgba(34,197,94,0.15) !important;
+}
+
+.bg-yellow-100 {
+  background:
+    rgba(245,158,11,0.15) !important;
+}
+
+.bg-gray-100 {
+  background:
+    rgba(148,163,184,0.12) !important;
+}
+
+/* ================= MODAL ================= */
+
+.fixed.inset-0 {
+  backdrop-filter:
+    blur(6px);
+}
+
+/* Modal box */
+
+.fixed.inset-0 > div {
+  animation:
+    popup 0.25s ease;
+
+  border-radius:
+    22px !important;
+
+  box-shadow:
+    0 30px 80px rgba(0,0,0,0.25);
+}
+
+/* Popup animation */
+
+@keyframes popup {
+  0% {
+    opacity: 0;
+
+    transform:
+      scale(0.94)
+      translateY(20px);
+  }
+
+  100% {
+    opacity: 1;
+
+    transform:
+      scale(1)
+      translateY(0);
+  }
+}
+
+/* ================= QUICK ACTIONS ================= */
+
+.space-y-2 button {
   font-weight: 600;
-  color: white;
-  background: linear-gradient(135deg, rgba(96, 165, 250, 0.9), rgba(168, 85, 247, 0.9));
-  cursor: pointer;
-  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
-.login-submit:hover {
-  transform: translateY(-1px);
-  opacity: 0.95;
+/* ================= PROFESSIONAL CARD EFFECT ================= */
+
+.grid .shadow {
+  overflow: hidden;
+
+  position: relative;
+
+  border-top:
+    1px solid rgba(255,255,255,0.04);
 }
 
-/* ✅ UPDATED MESSAGE STYLE */
-.login-message {
-  margin-top: 18px;
-  padding: 12px;
-  border-radius: 12px;
-  text-align: center;
-  font-size: 0.9rem;
+/* Glow hover */
 
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-
-  color: #fca5a5;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-
-  animation: slideUpFade 0.3s ease;
+.grid .shadow:hover {
+  box-shadow:
+    0 20px 40px rgba(15,23,42,0.12),
+    0 0 0 1px rgba(239,68,68,0.08);
 }
 
-/* ✅ ANIMATION */
-@keyframes slideUpFade {
+/* ================= ICONS ================= */
+
+svg {
+  transition:
+    all 0.2s ease;
+}
+
+button:hover svg {
+  transform:
+    scale(1.08);
+}
+
+/* ================= LINKS ================= */
+
+a {
+  transition:
+    all 0.2s ease;
+}
+
+a:hover {
+  opacity: 0.9;
+}
+
+/* ================= PAGE FADE ================= */
+
+main > div {
+  animation:
+    fadeIn 0.35s ease;
+}
+
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+
+    transform:
+      translateY(10px);
   }
+
   to {
     opacity: 1;
-    transform: translateY(0);
+
+    transform:
+      translateY(0);
   }
-}
-
-.login-actions {
-  margin-top: 34px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 18px;
-  color: #cbd5e1;
-  font-size: 0.95rem;
-  position: relative;
-  z-index: 1;
-}
-
-.login-actions button {
-  background: transparent;
-  border: none;
-  color: #cbd5e1;
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.login-actions button:hover {
-  color: #fff;
 }

@@ -1,58 +1,136 @@
-const errorHandler = require("./middleware/errorHandler");
-require('dotenv').config({ path: __dirname + '/.env' });
+const errorHandler = require(
+  "./middleware/errorHandler"
+);
+
+require("dotenv").config({
+  path: __dirname + "/.env",
+});
 
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const mongoose = require("mongoose");
 
-/* ================== DISABLE BUFFERING (FIX TIMEOUT ERROR) ================== */
+/* ================== DISABLE BUFFERING ================== */
+
 mongoose.set("bufferCommands", false);
 
 /* ================== INIT APP ================== */
+
 const app = express();
 
+/* ================== CORS ================== */
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+
 /* ================== MIDDLEWARE ================== */
-app.use(cors());
+
 app.use(express.json());
+
+app.use(
+  express.urlencoded({
+    extended: true,
+  })
+);
+
 app.use(morgan("dev"));
 
 /* ================== DB CONNECTION ================== */
+
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.log("❌ MongoDB Error:", err));
+  .then(() =>
+    console.log("✅ MongoDB Connected")
+  )
+  .catch((err) =>
+    console.log(
+      "❌ MongoDB Error:",
+      err
+    )
+  );
 
-/* 🔥 CONNECTION EVENTS (VERY IMPORTANT) */
-mongoose.connection.on("connected", () => {
-  console.log("🟢 Mongoose connected");
-});
+/* ================== CONNECTION EVENTS ================== */
 
-mongoose.connection.on("error", (err) => {
-  console.log("🔴 Mongoose error:", err);
-});
+mongoose.connection.on(
+  "connected",
+  () => {
+    console.log(
+      "🟢 Mongoose connected"
+    );
+  }
+);
 
-mongoose.connection.on("disconnected", () => {
-  console.log("⚠️ Mongoose disconnected");
-});
+mongoose.connection.on(
+  "error",
+  (err) => {
+    console.log(
+      "🔴 Mongoose error:",
+      err
+    );
+  }
+);
+
+mongoose.connection.on(
+  "disconnected",
+  () => {
+    console.log(
+      "⚠️ Mongoose disconnected"
+    );
+  }
+);
 
 /* ================== ROUTES ================== */
-const authRoutes = require("./routes/authRoutes");
-const adminRoutes = require("./routes/adminRoutes");
-const aiRoute = require("./routes/aiRoute");
-const runCodeRoutes = require("./routes/runCode");
+
+const authRoutes = require(
+  "./routes/authRoutes"
+);
+
+const problemRoutes = require(
+  "./routes/problemRoutes"
+);
+
+const adminRoutes = require(
+  "./routes/adminRoutes"
+);
+
+const aiRoute = require(
+  "./routes/aiRoute"
+);
+
+const runCodeRoutes = require(
+  "./routes/runCode"
+);
+
+/* API ROUTES */
 
 app.use("/api/auth", authRoutes);
+
 app.use("/api/admin", adminRoutes);
+
 app.use("/api/ai", aiRoute);
+
 app.use("/api/code", runCodeRoutes);
 
+app.use(
+  "/api/problems",
+  problemRoutes
+);
+
 /* ================== HEALTH CHECK ================== */
+
 app.get("/", (req, res) => {
-  res.send("🚀 Server is running...");
+  res.send(
+    "🚀 CodeArena Server Running"
+  );
 });
 
 /* ================== 404 ================== */
+
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -60,25 +138,44 @@ app.use((req, res) => {
   });
 });
 
-// ✅ CUSTOM ERROR HANDLER (LAST)
+/* ================== ERROR HANDLER ================== */
+
 app.use(errorHandler);
 
 /* ================== START SERVER ================== */
-const PORT = process.env.PORT || 5000;
 
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+const PORT =
+  process.env.PORT || 5000;
+
+const server = app.listen(
+  PORT,
+  () => {
+    console.log(
+      `🚀 Server running on http://localhost:${PORT}`
+    );
+  }
+);
 
 server.on("error", (err) => {
   if (err.code === "EADDRINUSE") {
-    console.error(`❌ Port ${PORT} is already in use. Kill the existing process or change PORT.`);
+    console.error(
+      `❌ Port ${PORT} already in use`
+    );
+
     process.exit(1);
   }
+
   throw err;
 });
 
+/* ================== GRACEFUL SHUTDOWN ================== */
+
 process.on("SIGINT", () => {
-  console.log("⚠️ Shutting down gracefully...");
-  mongoose.disconnect().finally(() => process.exit(0));
+  console.log(
+    "⚠️ Shutting down gracefully..."
+  );
+
+  mongoose
+    .disconnect()
+    .finally(() => process.exit(0));
 });
