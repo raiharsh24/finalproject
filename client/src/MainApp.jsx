@@ -474,22 +474,31 @@ export default function MainApp({
         <div style={styles.editor}>
 
           <Editor
-            height="100%"
-            width="100%"
-            language={language}
-            theme="vs-dark"
-            value={code}
-            onChange={(value) =>
-              setCode(value || "")
-            }
-            options={{
-              readOnly: isLocked,
-              fontSize: 15,
-              minimap: {
-                enabled: false,
-              },
-            }}
-          />
+height="100%"
+width="100%"
+language={language}
+theme="vs-dark"
+value={code}
+onChange={(value) =>
+setCode(value || "")
+}
+options={{
+readOnly: false,
+fontSize: 16,
+minimap: {
+enabled: false,
+},
+wordWrap: "on",
+scrollBeyondLastLine: false,
+automaticLayout: true,
+cursorBlinking: "smooth",
+smoothScrolling: true,
+padding: {
+top: 18,
+},
+}}
+/>
+
 
         </div>
 
