@@ -42,7 +42,7 @@ export default function AdminPanel() {
       setLoading(true);
 
       const res = await fetch(
-        "http://localhost:5000/api/admin/users",
+        "https://finalproject-bdk1.onrender.com/api/admin/users",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -132,7 +132,7 @@ export default function AdminPanel() {
       try {
         const res =
           await fetch(
-            `http://localhost:5000/api/admin/users/${userId}/role`,
+            `https://finalproject-bdk1.onrender.com/api/admin/users/${userId}/role`,
             {
               method: "PUT",
 
@@ -182,7 +182,7 @@ export default function AdminPanel() {
 
         const res =
           await fetch(
-            `http://localhost:5000/api/admin/users/${userId}/${endpoint}`,
+            `https://finalproject-bdk1.onrender.com/api/admin/users/${userId}/${endpoint}`,
             {
               method: "PUT",
 

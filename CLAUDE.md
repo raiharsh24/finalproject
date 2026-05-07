@@ -205,7 +205,7 @@ npm run dev
 ## Development Notes
 
 - Frontend runs on `http://localhost:5173` (Vite default)
-- Backend runs on `http://localhost:5000`
+- Backend runs on `https://finalproject-bdk1.onrender.com`
 - MongoDB should be running on default port 27017
 - For email OTP, use Gmail App Password (not regular password)
 - Gemini API key required for AI hints feature

@@ -20,7 +20,7 @@ import {
 import { toast } from "../components/Toast";
 
 const API =
-  "http://localhost:5000/api/problems";
+  "https://finalproject-bdk1.onrender.com/api/problems";
 
 export default function ProblemsBank() {
   const [problems, setProblems] =

@@ -98,7 +98,7 @@ export default function Login({
       try {
         const res =
           await fetch(
-            "http://localhost:5000/api/auth/login",
+            "https://finalproject-bdk1.onrender.com/api/auth/login",
             {
               method: "POST",
 
@@ -178,7 +178,7 @@ export default function Login({
       try {
         const res =
           await fetch(
-            "http://localhost:5000/api/auth/send-otp",
+            "https://finalproject-bdk1.onrender.com/api/auth/send-otp",
             {
               method: "POST",
 
@@ -245,7 +245,7 @@ export default function Login({
       try {
         const res =
           await fetch(
-            "http://localhost:5000/api/auth/register",
+            "https://finalproject-bdk1.onrender.com/api/auth/register",
             {
               method: "POST",
 
@@ -318,7 +318,7 @@ export default function Login({
       try {
         const res =
           await fetch(
-            "http://localhost:5000/api/auth/reset-password",
+            "https://finalproject-bdk1.onrender.com/api/auth/reset-password",
             {
               method: "POST",
 

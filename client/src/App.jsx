@@ -67,7 +67,7 @@ useEffect(() => {
 
         const res =
           await fetch(
-            "http://localhost:5000/api/admin/users",
+            "https://finalproject-bdk1.onrender.com/api/admin/users",
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -197,7 +197,7 @@ useEffect(() => {
     if (data.view === "submissions") {
       try {
         const res = await fetch(
-          "http://localhost:5000/api/code/history",
+          "https://finalproject-bdk1.onrender.com/api/code/history",
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem(
@@ -222,7 +222,7 @@ useEffect(() => {
     if (data.view === "leaderboard") {
       try {
         const res = await fetch(
-          `http://localhost:5000/api/code/leaderboard/${
+          `https://finalproject-bdk1.onrender.com/api/code/leaderboard/${
             data.problem || "Two Sum"
           }`
         );
@@ -242,7 +242,7 @@ useEffect(() => {
     if (data.view === "contest") {
       try {
         const res = await fetch(
-          "http://localhost:5000/api/code/contest-leaderboard"
+          "https://finalproject-bdk1.onrender.com/api/code/contest-leaderboard"
         );
 
         const result = await res.json();

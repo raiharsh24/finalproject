@@ -6,7 +6,7 @@ import { askAI } from "./aiHelper";
 /* ================= API ================= */
 
 const API =
-  "http://localhost:5000/api/problems";
+  "https://finalproject-bdk1.onrender.com/api/problems";
 
 /* ================= CONTEST CONFIG ================= */
 
@@ -221,7 +221,7 @@ export default function MainApp({
     try {
       const res =
         await fetch(
-          "http://localhost:5000/api/code/run",
+          "https://finalproject-bdk1.onrender.com/api/code/run",
           {
             method: "POST",
 
@@ -260,7 +260,7 @@ export default function MainApp({
 
       const res =
         await fetch(
-          "http://localhost:5000/api/code/submit",
+          "https://finalproject-bdk1.onrender.com/api/code/submit",
           {
             method: "POST",
 
