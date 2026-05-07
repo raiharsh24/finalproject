@@ -1,87 +1,198 @@
 const express = require("express");
+
 const router = express.Router();
 
 const User = require("../models/User");
+
 const authMiddleware = require("../middleware/authMiddleware");
+
 const roleMiddleware = require("../middleware/roleMiddleware");
 
 /* ================= GET ALL USERS ================= */
+
 router.get(
   "/users",
   authMiddleware,
   roleMiddleware("admin"),
   async (req, res) => {
     try {
-      const users = await User.find().select("-password");
-      res.json(users);
+      const users = await User.find()
+        .select("-password")
+        .sort({
+          createdAt: -1,
+        });
+
+      return res.json({
+        success: true,
+        data: users,
+      });
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Failed to fetch users" });
-    }
-  }
-);
-
-/* ================= CHANGE USER ROLE ================= */
-router.post(
-  "/change-role",
-  authMiddleware,
-  roleMiddleware("admin"),
-  async (req, res) => {
-    try {
-      const { email, role } = req.body;
-
-      if (!["student", "teacher", "admin"].includes(role)) {
-        return res.status(400).json({ message: "Invalid role" });
-      }
-
-      const user = await User.findOneAndUpdate(
-        { email },
-        { role },
-        { new: true }
+      console.error(
+        "GET USERS ERROR:",
+        err
       );
 
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.json({ message: "Role updated", user });
-
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Server error" });
+      return res.status(500).json({
+        success: false,
+        message:
+          "Failed to fetch users",
+      });
     }
   }
 );
 
-/* ================= DELETE USER ================= */
-router.delete(
-  "/delete-user",
+/* ================= UPDATE ROLE ================= */
+
+router.put(
+  "/users/:id/role",
   authMiddleware,
   roleMiddleware("admin"),
   async (req, res) => {
     try {
-      const { email } = req.body;
+      const { role } = req.body;
 
-      if (!email) {
-        return res.status(400).json({ message: "Email required" });
+      const allowedRoles = [
+        "student",
+        "teacher",
+        "admin",
+      ];
+
+      if (
+        !allowedRoles.includes(
+          role
+        )
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid role",
+        });
       }
 
-      // 🔥 Prevent admin deleting themselves
-      if (req.user.email === email) {
-        return res.status(400).json({ message: "You cannot delete yourself" });
-      }
-
-      const user = await User.findOneAndDelete({ email });
+      const user =
+        await User.findByIdAndUpdate(
+          req.params.id,
+          { role },
+          { new: true }
+        ).select("-password");
 
       if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        return res.status(404).json({
+          success: false,
+          message:
+            "User not found",
+        });
       }
 
-      res.json({ message: "User deleted" });
-
+      return res.json({
+        success: true,
+        message:
+          "Role updated successfully",
+        data: user,
+      });
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Server error" });
+      console.error(
+        "UPDATE ROLE ERROR:",
+        err
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Failed to update role",
+      });
+    }
+  }
+);
+
+/* ================= BLOCK USER ================= */
+
+router.put(
+  "/users/:id/block",
+  authMiddleware,
+  roleMiddleware("admin"),
+  async (req, res) => {
+    try {
+      const user =
+        await User.findByIdAndUpdate(
+          req.params.id,
+          {
+            isBlocked: true,
+          },
+          { new: true }
+        ).select("-password");
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message:
+            "User not found",
+        });
+      }
+
+      return res.json({
+        success: true,
+        message:
+          "User blocked successfully",
+        data: user,
+      });
+    } catch (err) {
+      console.error(
+        "BLOCK USER ERROR:",
+        err
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Failed to block user",
+      });
+    }
+  }
+);
+
+/* ================= UNBLOCK USER ================= */
+
+router.put(
+  "/users/:id/unblock",
+  authMiddleware,
+  roleMiddleware("admin"),
+  async (req, res) => {
+    try {
+      const user =
+        await User.findByIdAndUpdate(
+          req.params.id,
+          {
+            isBlocked: false,
+          },
+          { new: true }
+        ).select("-password");
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message:
+            "User not found",
+        });
+      }
+
+      return res.json({
+        success: true,
+        message:
+          "User unblocked successfully",
+        data: user,
+      });
+    } catch (err) {
+      console.error(
+        "UNBLOCK USER ERROR:",
+        err
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Failed to unblock user",
+      });
     }
   }
 );

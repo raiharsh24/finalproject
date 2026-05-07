@@ -37,17 +37,90 @@ export default function App() {
 
   /* ================= LOAD ROLE ================= */
 
-  useEffect(() => {
-    const savedRole =
-      localStorage.getItem("role");
+  /* ================= AUTH RESTORE ================= */
 
-    if (savedRole) {
-      setRole(savedRole);
-    }
+useEffect(() => {
+  const restoreSession =
+    async () => {
+      try {
+        const savedRole =
+          localStorage.getItem(
+            "role"
+          );
 
-    setLoading(false);
-  }, []);
+        const token =
+          localStorage.getItem(
+            "token"
+          );
 
+        /* NO SESSION */
+
+        if (
+          !savedRole ||
+          !token
+        ) {
+          setLoading(false);
+          return;
+        }
+
+        /* VERIFY TOKEN */
+
+        const res =
+          await fetch(
+            "http://localhost:5000/api/admin/users",
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+        /* INVALID TOKEN */
+
+        if (
+          res.status === 401 ||
+          res.status === 403
+        ) {
+          localStorage.removeItem(
+            "token"
+          );
+
+          localStorage.removeItem(
+            "role"
+          );
+
+          setRole(null);
+
+          setLoading(false);
+
+          return;
+        }
+
+        /* VALID SESSION */
+
+        setRole(savedRole);
+      } catch (err) {
+        console.error(
+          "SESSION RESTORE ERROR:",
+          err
+        );
+
+        localStorage.removeItem(
+          "token"
+        );
+
+        localStorage.removeItem(
+          "role"
+        );
+
+        setRole(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+  restoreSession();
+}, []);
   /* ================= STUDENT TIMER ================= */
 
   useEffect(() => {

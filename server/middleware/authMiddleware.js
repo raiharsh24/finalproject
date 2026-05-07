@@ -1,9 +1,11 @@
 const jwt = require("jsonwebtoken");
 
-module.exports = (req, res, next) => {
+module.exports = (
+  req,
+  res,
+  next
+) => {
   try {
-    /* ================= TOKEN EXTRACTION ================= */
-
     const authHeader =
       req.headers.authorization;
 
@@ -11,11 +13,9 @@ module.exports = (req, res, next) => {
       return res.status(401).json({
         success: false,
         message:
-          "No authorization token provided",
+          "No token provided",
       });
     }
-
-    /* ================= FORMAT CHECK ================= */
 
     const parts =
       authHeader.split(" ");
@@ -33,21 +33,12 @@ module.exports = (req, res, next) => {
 
     const token = parts[1];
 
-    /* ================= VERIFY TOKEN ================= */
-
     const decoded = jwt.verify(
       token,
-      process.env.JWT_SECRET ||
-        "SECRET_KEY"
+      process.env.JWT_SECRET
     );
 
-    /* ================= ATTACH USER ================= */
-
-    req.user = {
-      id: decoded.id,
-      role: decoded.role,
-      email: decoded.email,
-    };
+    req.user = decoded;
 
     next();
   } catch (err) {
