@@ -13,7 +13,7 @@ import {
 const mockLeaderboard = [
   {
     id: 1,
-    name: "Harsh Rai",
+    name: "Shivani Singh",
     score: 980,
     solved: 14,
     streak: 7,
@@ -21,7 +21,7 @@ const mockLeaderboard = [
 
   {
     id: 2,
-    name: "Aarav Sharma",
+    name: "Harsh Rai",
     score: 920,
     solved: 13,
     streak: 5,

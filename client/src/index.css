@@ -2,35 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ================= GLOBAL THEME ================= */
+/* ================= ROOT ================= */
 
 :root {
-  --primary: #ef4444;
-  --primary-hover: #dc2626;
+  --primary: #7c3aed;
+  --primary-hover: #6d28d9;
 
-  --sidebar-bg: #020617;
-  --sidebar-active: #dc2626;
+  --sidebar-bg: #0f172a;
+  --page-bg: #f8fafc;
 
-  --page-bg: #f1f5f9;
   --card-bg: #ffffff;
 
-  --sidebar-text: #cbd5e1;
+  --border: #e2e8f0;
 
-  --border-divider: #e2e8f0;
-
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --danger: #ef4444;
+  --text-main: #0f172a;
+  --text-soft: #64748b;
 }
 
-/* ================= BODY ================= */
+/* ================= GLOBAL ================= */
 
-body {
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
-  background: var(--page-bg);
+  min-height: 100%;
   font-family: Inter, sans-serif;
-  color: #0f172a;
+  background: var(--page-bg);
+  color: var(--text-main);
+}
+
+body {
   overflow-x: hidden;
 }
 
@@ -41,393 +47,182 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #111827;
+  background: #0f172a;
 }
 
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(
     to bottom,
-    #ef4444,
-    #dc2626
+    #7c3aed,
+    #5b21b6
   );
 
   border-radius: 999px;
 }
 
+/* ================= ONLY DASHBOARD AREA ================= */
+
+.dashboard-layout main {
+  background:
+    linear-gradient(
+      180deg,
+      #f8fafc 0%,
+      #f1f5f9 100%
+    );
+}
+
 /* ================= SIDEBAR ================= */
 
-aside {
+.dashboard-layout aside {
   background:
     linear-gradient(
       180deg,
       #020617 0%,
       #0f172a 100%
-    ) !important;
+    );
 
   border-right:
     1px solid rgba(255,255,255,0.05);
 }
 
-/* Sidebar logo */
-
-aside span {
-  letter-spacing: 0.3px;
+.dashboard-layout aside nav a {
+  transition: all 0.25s ease;
 }
 
-/* Sidebar items */
-
-aside nav a {
-  transition:
-    all 0.25s ease !important;
-
-  margin-bottom: 6px;
-
-  border: 1px solid transparent;
-
-  border-radius: 14px !important;
-}
-
-/* Hover */
-
-aside nav a:hover {
+.dashboard-layout aside nav a:hover {
   background:
-    rgba(239,68,68,0.12) !important;
+    rgba(124,58,237,0.12);
 
   transform:
-    translateX(6px);
-
-  border-color:
-    rgba(239,68,68,0.25);
-
-  box-shadow:
-    0 6px 18px rgba(239,68,68,0.12);
+    translateX(4px);
 }
 
-/* Active */
-
-aside nav a.active {
+.dashboard-layout aside nav a.active {
   background:
     linear-gradient(
-      90deg,
-      #ef4444,
-      #dc2626
-    ) !important;
+      135deg,
+      #7c3aed,
+      #6d28d9
+    );
 
-  color: white !important;
+  color: white;
 
   box-shadow:
-    0 8px 20px rgba(239,68,68,0.35);
-}
-
-/* Bottom buttons */
-
-aside button:hover {
-  background:
-    rgba(239,68,68,0.12) !important;
-
-  transform:
-    translateX(5px);
+    0 10px 25px rgba(124,58,237,0.28);
 }
 
 /* ================= NAVBAR ================= */
 
-header {
+.dashboard-layout header {
   background:
-    rgba(255,255,255,0.82) !important;
+    rgba(255,255,255,0.9);
 
   backdrop-filter:
     blur(12px);
 
   border-bottom:
-    1px solid rgba(0,0,0,0.05);
-
-  box-shadow:
-    0 2px 8px rgba(0,0,0,0.04);
-}
-
-/* ================= SEARCH BAR ================= */
-
-input[type="text"],
-input[type="date"],
-input[type="time"],
-textarea,
-select {
-  transition:
-    all 0.25s ease;
-
-  border:
-    1px solid #dbe3ee;
-}
-
-/* Focus */
-
-input:focus,
-textarea:focus,
-select:focus {
-  outline: none;
-
-  border-color:
-    #ef4444 !important;
-
-  box-shadow:
-    0 0 0 4px rgba(239,68,68,0.12);
-}
-
-/* ================= MAIN CONTENT ================= */
-
-main {
-  background:
-    linear-gradient(
-      180deg,
-      #f8fafc 0%,
-      #eef2ff 100%
-    );
+    1px solid rgba(0,0,0,0.04);
 }
 
 /* ================= CARDS ================= */
 
-.bg-card-bg,
-.bg-white {
-  border-radius: 20px !important;
-
+.dashboard-layout .bg-white,
+.dashboard-layout .bg-card-bg {
   border:
     1px solid rgba(0,0,0,0.04);
 
   box-shadow:
-    0 8px 25px rgba(15,23,42,0.05);
+    0 8px 30px rgba(15,23,42,0.05);
 
   transition:
-    all 0.3s ease;
+    all 0.25s ease;
 }
 
-/* Card hover */
-
-.bg-card-bg:hover,
-.bg-white:hover {
+.dashboard-layout .bg-white:hover,
+.dashboard-layout .bg-card-bg:hover {
   transform:
-    translateY(-6px);
+    translateY(-3px);
 
   box-shadow:
-    0 20px 40px rgba(15,23,42,0.12);
+    0 16px 40px rgba(15,23,42,0.08);
+}
+
+/* ================= INPUTS ================= */
+
+.dashboard-layout input,
+.dashboard-layout textarea,
+.dashboard-layout select {
+  border:
+    1px solid #dbe3ee;
+
+  transition:
+    all 0.2s ease;
+}
+
+.dashboard-layout input:focus,
+.dashboard-layout textarea:focus,
+.dashboard-layout select:focus {
+  outline: none;
+
+  border-color:
+    #7c3aed;
+
+  box-shadow:
+    0 0 0 4px rgba(124,58,237,0.12);
 }
 
 /* ================= BUTTONS ================= */
 
-button {
-  transition:
-    all 0.25s ease !important;
-
-  border-radius: 12px !important;
-}
-
-/* Primary */
-
-.bg-primary,
-button.bg-primary {
-  background:
-    linear-gradient(
-      135deg,
-      #ef4444,
-      #dc2626
-    ) !important;
-
-  color: white !important;
-
-  border: none;
-}
-
-/* Hover */
-
-.bg-primary:hover,
-button.bg-primary:hover {
-  transform:
-    translateY(-2px);
-
-  box-shadow:
-    0 12px 24px rgba(239,68,68,0.35);
-}
-
-/* Secondary */
-
-.border-primary {
-  border-color:
-    #ef4444 !important;
-}
-
-.text-primary {
-  color:
-    #ef4444 !important;
-}
-
-.border-primary:hover {
-  background:
-    #ef4444 !important;
-
-  color:
-    white !important;
-}
-
-/* Click */
-
-button:active {
-  transform:
-    scale(0.96);
-}
-
-/* ================= TABLES ================= */
-
-table {
-  border-collapse: collapse;
-}
-
-/* Table header */
-
-thead {
-  background:
-    linear-gradient(
-      90deg,
-      #f8fafc,
-      #f1f5f9
-    ) !important;
-}
-
-/* Rows */
-
-tbody tr {
+.dashboard-layout button {
   transition:
     all 0.2s ease;
 }
 
-/* Hover */
-
-tbody tr:hover {
-  background:
-    rgba(239,68,68,0.04) !important;
+.dashboard-layout button:hover {
+  transform:
+    translateY(-1px);
 }
 
-/* ================= STATUS BADGES ================= */
-
-.bg-green-100 {
-  background:
-    rgba(34,197,94,0.15) !important;
+.dashboard-layout button:active {
+  transform:
+    scale(0.97);
 }
 
-.bg-yellow-100 {
-  background:
-    rgba(245,158,11,0.15) !important;
+/* ================= TABLE ================= */
+
+.dashboard-layout tbody tr {
+  transition:
+    all 0.2s ease;
 }
 
-.bg-gray-100 {
+.dashboard-layout tbody tr:hover {
   background:
-    rgba(148,163,184,0.12) !important;
+    rgba(124,58,237,0.04);
 }
 
 /* ================= MODAL ================= */
 
-.fixed.inset-0 {
+.dashboard-layout .fixed.inset-0 {
   backdrop-filter:
-    blur(6px);
+    blur(5px);
 }
 
-/* Modal box */
+/* ================= ANIMATION ================= */
 
-.fixed.inset-0 > div {
+.dashboard-layout main > div {
   animation:
-    popup 0.25s ease;
-
-  border-radius:
-    22px !important;
-
-  box-shadow:
-    0 30px 80px rgba(0,0,0,0.25);
-}
-
-/* Popup animation */
-
-@keyframes popup {
-  0% {
-    opacity: 0;
-
-    transform:
-      scale(0.94)
-      translateY(20px);
-  }
-
-  100% {
-    opacity: 1;
-
-    transform:
-      scale(1)
-      translateY(0);
-  }
-}
-
-/* ================= QUICK ACTIONS ================= */
-
-.space-y-2 button {
-  font-weight: 600;
-}
-
-/* ================= PROFESSIONAL CARD EFFECT ================= */
-
-.grid .shadow {
-  overflow: hidden;
-
-  position: relative;
-
-  border-top:
-    1px solid rgba(255,255,255,0.04);
-}
-
-/* Glow hover */
-
-.grid .shadow:hover {
-  box-shadow:
-    0 20px 40px rgba(15,23,42,0.12),
-    0 0 0 1px rgba(239,68,68,0.08);
-}
-
-/* ================= ICONS ================= */
-
-svg {
-  transition:
-    all 0.2s ease;
-}
-
-button:hover svg {
-  transform:
-    scale(1.08);
-}
-
-/* ================= LINKS ================= */
-
-a {
-  transition:
-    all 0.2s ease;
-}
-
-a:hover {
-  opacity: 0.9;
-}
-
-/* ================= PAGE FADE ================= */
-
-main > div {
-  animation:
-    fadeIn 0.35s ease;
+    fadeIn 0.3s ease;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-
     transform:
-      translateY(10px);
+      translateY(8px);
   }
 
   to {
     opacity: 1;
-
     transform:
       translateY(0);
   }

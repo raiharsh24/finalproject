@@ -3,7 +3,7 @@
 export const recentActivities = [
   {
     id: 1,
-    name: "Aarav Sharma",
+    name: "Ankit Sharma",
     avatar: "A",
     action: "submitted solution for Two Sum",
     time: "2 mins ago",

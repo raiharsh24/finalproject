@@ -3,8 +3,8 @@
 export const chats = [
   {
     id: 1,
-    name: "Aarav Sharma",
-    avatar: "AS",
+    name: "Harsh Rai",
+    avatar: "HR",
     lastMessage:
       "Sir, my DP solution gives TLE.",
     time: "2 mins ago",

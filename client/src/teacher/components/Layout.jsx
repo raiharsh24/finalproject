@@ -10,6 +10,7 @@ export default function Layout({
   return (
     <div
       className="
+        dashboard-layout
         flex
         h-screen
         overflow-hidden
