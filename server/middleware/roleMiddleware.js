@@ -1,8 +1,37 @@
-module.exports = (allowedRoles) => {
+module.exports = (...allowedRoles) => {
   return (req, res, next) => {
-    if (!allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({ message: "Access denied" });
+    try {
+      /* ================= AUTH CHECK ================= */
+
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          message:
+            "Authentication required",
+        });
+      }
+
+      /* ================= ROLE CHECK ================= */
+
+      if (
+        !allowedRoles.includes(
+          req.user.role
+        )
+      ) {
+        return res.status(403).json({
+          success: false,
+          message:
+            "Access denied",
+        });
+      }
+
+      next();
+    } catch (err) {
+      return res.status(500).json({
+        success: false,
+        message:
+          "Role authorization failed",
+      });
     }
-    next();
   };
 };

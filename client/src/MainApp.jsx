@@ -1,5 +1,12 @@
 import Editor from "@monaco-editor/react";
 import { useState, useEffect } from "react";
+import axios from "axios";
+import { askAI } from "./aiHelper";
+
+/* ================= API ================= */
+
+const API =
+  "http://localhost:5000/api/problems";
 
 /* ================= CONTEST CONFIG ================= */
 
@@ -8,129 +15,178 @@ const CONTEST = {
   endTime: new Date("2026-05-05T18:30:00"),
 };
 
-/* ================= PROBLEM DATA ================= */
+/* ================= FALLBACK ================= */
 
-const problems = {
-  "Two Sum": {
-    description:
-      "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
+const fallbackProblem = {
+  _id: "fallback",
 
-    example:
-      "Input: nums = [2,7,11,15], target = 9\nOutput: [0,1]",
+  title: "Demo Problem",
 
-    starterCode:
-      "// Two Sum\n// Return indices of two numbers\n",
+  description:
+    "Backend problems failed to load.",
 
-    input:
-      "2 7 11 15\n9",
+  starterCode: `#include <bits/stdc++.h>
+using namespace std;
 
-    testCases: [
-      {
-        input: "2 7 11 15\n9",
-        expected: "[0,1]",
-      },
-      {
-        input: "3 2 4\n6",
-        expected: "[1,2]",
-      },
-    ],
-  },
+int main() {
 
-  "Add Two Numbers": {
-    description:
-      "You are given two non-empty linked lists representing two non-negative integers.",
+    return 0;
+}`,
 
-    example:
-      "Input: l1 = [2,4,3], l2 = [5,6,4]\nOutput: [7,0,8]",
-
-    starterCode:
-      "// Add Two Numbers\n",
-
-    input:
-      "2 4 3\n5 6 4",
-
-    testCases: [
-      {
-        input: "2 4 3\n5 6 4",
-        expected: "[7,0,8]",
-      },
-    ],
-  },
+  sampleIO: [
+    {
+      input: "2 3",
+      output: "5",
+    },
+  ],
 };
 
 export default function MainApp({
-  role,
   onBack,
   selectedProblem,
 }) {
+  /* ================= PROBLEMS ================= */
 
-  const [currentProblem,
-    setCurrentProblem] =
-    useState(null);
-
-  const [code,
-    setCode] =
-    useState("// Write C++ code");
-
-  const [output,
-    setOutput] =
-    useState("");
-
-  const [input,
-    setInput] =
-    useState("");
-
-  const [language,
-    setLanguage] =
-    useState("cpp");
-
-  const [results,
-    setResults] =
+  const [problems, setProblems] =
     useState([]);
 
-  const [submission,
-    setSubmission] =
+  const [currentProblem, setCurrentProblem] =
     useState(null);
 
-  /* ================= CONTEST STATE ================= */
+  const [loadingProblems, setLoadingProblems] =
+    useState(true);
 
-  const [timeLeft,
-    setTimeLeft] =
+  /* ================= EDITOR ================= */
+
+  const [code, setCode] =
+    useState("");
+
+  const [output, setOutput] =
+    useState("No output");
+
+  const [input, setInput] =
+    useState("");
+
+  const [language, setLanguage] =
+    useState("cpp");
+
+  /* ================= AI ================= */
+
+  const [aiOpen, setAiOpen] =
+    useState(false);
+
+  const [aiLoading, setAiLoading] =
+    useState(false);
+
+  const [aiResponse, setAiResponse] =
+    useState(
+      "Ask CodeArena AI for coding help."
+    );
+
+  /* ================= SUBMISSION ================= */
+
+  const [submitting, setSubmitting] =
+    useState(false);
+
+  const [submissionResult, setSubmissionResult] =
+    useState(null);
+
+  /* ================= TIMER ================= */
+
+  const [timeLeft, setTimeLeft] =
     useState(0);
 
-  const [status,
-    setStatus] =
-    useState("loading");
+  const [status, setStatus] =
+    useState("running");
+
+  /* ================= FETCH PROBLEMS ================= */
 
   useEffect(() => {
+    const fetchProblems =
+      async () => {
+        try {
+          setLoadingProblems(true);
 
+          const res =
+            await axios.get(API);
+
+          const fetched =
+            res.data.data || [];
+
+          if (fetched.length === 0) {
+            setProblems([
+              fallbackProblem,
+            ]);
+
+            setCurrentProblem(
+              fallbackProblem
+            );
+
+            return;
+          }
+
+          setProblems(fetched);
+
+          const selected =
+            fetched.find(
+              (p) =>
+                p.title ===
+                selectedProblem
+            ) || fetched[0];
+
+          setCurrentProblem(selected);
+        } catch (err) {
+          console.error(err);
+
+          setProblems([
+            fallbackProblem,
+          ]);
+
+          setCurrentProblem(
+            fallbackProblem
+          );
+        } finally {
+          setLoadingProblems(false);
+        }
+      };
+
+    fetchProblems();
+  }, [selectedProblem]);
+
+  /* ================= LOAD PROBLEM ================= */
+
+  useEffect(() => {
+    if (!currentProblem) return;
+
+    setCode(
+      currentProblem.starterCode ||
+        fallbackProblem.starterCode
+    );
+
+    setInput(
+      currentProblem.sampleIO?.[0]
+        ?.input || ""
+    );
+  }, [currentProblem]);
+
+  /* ================= TIMER ================= */
+
+  useEffect(() => {
     const updateTimer = () => {
-
       const now = new Date();
 
-      if (now < CONTEST.startTime) {
-
-        setStatus("not-started");
-
-        setTimeLeft(
-          Math.floor(
-            (CONTEST.startTime - now) / 1000
-          )
-        );
-
-      } else if (now > CONTEST.endTime) {
-
+      if (now > CONTEST.endTime) {
         setStatus("ended");
 
         setTimeLeft(0);
-
       } else {
-
         setStatus("running");
 
         setTimeLeft(
           Math.floor(
-            (CONTEST.endTime - now) / 1000
+            (CONTEST.endTime -
+              now) /
+              1000
           )
         );
       }
@@ -139,110 +195,32 @@ export default function MainApp({
     updateTimer();
 
     const interval =
-      setInterval(updateTimer, 1000);
+      setInterval(
+        updateTimer,
+        1000
+      );
 
     return () =>
       clearInterval(interval);
-
   }, []);
 
   const formatTime = () => {
-
     const min =
       Math.floor(timeLeft / 60);
 
-    const sec =
-      timeLeft % 60;
+    const sec = timeLeft % 60;
 
     return `${min}:${sec
       .toString()
       .padStart(2, "0")}`;
   };
 
-  const isLocked =
-    status !== "running";
-
-  useEffect(() => {
-
-    if (selectedProblem) {
-
-      setCurrentProblem(selectedProblem);
-
-      const prob =
-        problems[selectedProblem];
-
-      if (prob) {
-
-        setCode(prob.starterCode);
-
-        setInput(prob.input);
-      }
-    }
-
-  }, [selectedProblem]);
-
-  /* ================= RUN CODE ================= */
+  /* ================= RUN ================= */
 
   const runCode = async () => {
-
-    if (isLocked) return;
-
     try {
-
-      const res = await fetch(
-        "http://localhost:5000/api/code/run",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-
-          body: JSON.stringify({
-            code,
-            input,
-            language,
-          }),
-        }
-      );
-
-      const data =
-        await res.json();
-
-      setOutput(
-        data.output || "No output"
-      );
-
-    } catch {
-
-      setOutput(
-        "Error running code"
-      );
-    }
-  };
-
-  /* ================= RUN TESTS ================= */
-
-  const runTests = async () => {
-
-    if (
-      !currentProblem ||
-      isLocked
-    )
-      return;
-
-    const testCases =
-      problems[currentProblem]
-        .testCases;
-
-    const resultsArr = [];
-
-    for (let test of testCases) {
-
-      try {
-
-        const res = await fetch(
+      const res =
+        await fetch(
           "http://localhost:5000/api/code/run",
           {
             method: "POST",
@@ -254,97 +232,138 @@ export default function MainApp({
 
             body: JSON.stringify({
               code,
-              input: test.input,
+              input,
               language,
             }),
           }
         );
 
-        const data =
-          await res.json();
+      const data =
+        await res.json();
 
-        const actual =
-          (data.output || "").trim();
-
-        const passed =
-          actual === test.expected;
-
-        resultsArr.push({
-          input: test.input,
-          expected: test.expected,
-          actual,
-          passed,
-        });
-
-      } catch {
-
-        resultsArr.push({
-          input: test.input,
-          expected: test.expected,
-          actual: "Error",
-          passed: false,
-        });
-      }
+      setOutput(
+        data.output ||
+          "No output"
+      );
+    } catch {
+      setOutput(
+        "Error running code"
+      );
     }
-
-    setResults(resultsArr);
   };
 
-  /* ================= SUBMIT CODE ================= */
+  /* ================= SUBMIT ================= */
 
   const submitCode = async () => {
-
-    if (
-      !currentProblem ||
-      isLocked
-    )
-      return;
-
     try {
+      setSubmitting(true);
 
-      const res = await fetch(
-        "http://localhost:5000/api/code/submit",
-        {
-          method: "POST",
+      const res =
+        await fetch(
+          "http://localhost:5000/api/code/submit",
+          {
+            method: "POST",
 
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
 
-          body: JSON.stringify({
-            code,
-            language,
-            problem:
-              currentProblem,
-          }),
-        }
-      );
+            body: JSON.stringify({
+              code,
+              language,
+              problem:
+                currentProblem.title,
+            }),
+          }
+        );
 
       const data =
         await res.json();
 
-      setSubmission(data);
+      setSubmissionResult(data);
 
+      if (
+        data.finalStatus
+      ) {
+        setOutput(
+          `${data.finalStatus}
+
+Score: ${data.score || 0}%
+
+Passed: ${data.passed || 0}/${data.total || 0}`
+        );
+      }
     } catch {
-
-      setSubmission({
-        finalStatus: "Error",
-        score: 0,
-        passed: 0,
-        total: 0,
-      });
+      setOutput(
+        "Submission failed"
+      );
+    } finally {
+      setSubmitting(false);
     }
   };
 
+  /* ================= AI ================= */
+
+  const handleAI = async (
+    action
+  ) => {
+    try {
+      setAiOpen(true);
+
+      setAiLoading(true);
+
+      setAiResponse(
+        "Thinking..."
+      );
+
+      const response =
+        await askAI({
+          code,
+          problem:
+            currentProblem.title,
+          action,
+          output,
+        });
+
+      setAiResponse(response);
+    } catch {
+      setAiResponse(
+        "AI request failed."
+      );
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  if (
+    loadingProblems &&
+    !currentProblem
+  ) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          background:
+            "#020617",
+          color: "#fff",
+          display: "flex",
+          alignItems:
+            "center",
+          justifyContent:
+            "center",
+        }}
+      >
+        Loading Problems...
+      </div>
+    );
+  }
+
   return (
+    <div style={styles.page}>
+      {/* HEADER */}
 
-    <div style={styles.container}>
-
-      {/* TOP BAR */}
-
-      <div style={styles.backBar}>
-
+      <div style={styles.header}>
         <button
           onClick={onBack}
           style={styles.backButton}
@@ -352,718 +371,665 @@ export default function MainApp({
           ← Back to Dashboard
         </button>
 
-        <div
-          style={{
-            fontWeight: "700",
-            fontSize: "16px",
-          }}
-        >
-
-          {status === "not-started" &&
-            `⏳ Starts in: ${formatTime()}`}
-
-          {status === "running" &&
-            `🔥 Ends in: ${formatTime()}`}
-
-          {status === "ended" &&
-            `❌ Contest Ended`}
-
+        <div style={styles.timer}>
+          {status === "running"
+            ? `🔥 Ends in: ${formatTime()}`
+            : "❌ Contest Ended"}
         </div>
-
       </div>
 
-      {/* SIDEBAR */}
+      {/* BODY */}
 
-      <div style={styles.sidebar}>
+      <div style={styles.body}>
+        {/* SIDEBAR */}
 
-        <h2
-          style={{
-            marginBottom: "20px",
-            fontSize: "24px",
-            fontWeight: "800",
-          }}
-        >
-          Problems
-        </h2>
+        <div style={styles.sidebar}>
+          <h2 style={styles.sidebarTitle}>
+            Problems
+          </h2>
 
-        {Object.keys(problems).map((p) => (
-
-          <div
-            key={p}
-            style={{
-              ...styles.problem,
-
-              background:
-                currentProblem === p
-                  ? "linear-gradient(135deg,#7c3aed,#d946ef)"
-                  : styles.problem.background,
-
-              opacity:
-                isLocked ? 0.6 : 1,
-            }}
-
-            onClick={() => {
-
-              if (isLocked)
-                return;
-
-              setCurrentProblem(p);
-
-              setCode(
-                problems[p]
-                  .starterCode
-              );
-
-              setInput(
-                problems[p].input
-              );
-
-              setResults([]);
-
-              setSubmission(null);
-            }}
-          >
-            {p}
-          </div>
-
-        ))}
-
-      </div>
-
-      {/* MAIN */}
-
-      <div style={styles.main}>
-
-        {/* TOPBAR */}
-
-        <div style={styles.topbar}>
-
-          <span>
-
-            {currentProblem
-              ? `Problem: ${currentProblem}`
-              : "Select a Problem"}
-
-          </span>
-
-          <select
-            value={language}
-            onChange={(e) =>
-              setLanguage(
-                e.target.value
-              )
-            }
-            style={styles.select}
-            disabled={isLocked}
-          >
-
-            <option value="cpp">
-              C++
-            </option>
-
-            <option value="java">
-              Java
-            </option>
-
-          </select>
-
-        </div>
-
-        {/* EDITOR */}
-
-        <div style={styles.editor}>
-
-          <Editor
-height="100%"
-width="100%"
-language={language}
-theme="vs-dark"
-value={code}
-onChange={(value) =>
-setCode(value || "")
-}
-options={{
-readOnly: false,
-fontSize: 16,
-minimap: {
-enabled: false,
-},
-wordWrap: "on",
-scrollBeyondLastLine: false,
-automaticLayout: true,
-cursorBlinking: "smooth",
-smoothScrolling: true,
-padding: {
-top: 18,
-},
-}}
-/>
-
-
-        </div>
-
-        {/* OUTPUT */}
-
-        <div style={styles.output}>
-
-          <h3
-            style={{
-              marginBottom: "12px",
-            }}
-          >
-            Output
-          </h3>
-
-          <pre>
-            {output}
-          </pre>
-
-        </div>
-
-      </div>
-
-      {/* RIGHT PANEL */}
-
-      <div style={styles.right}>
-
-        {currentProblem && (
-          <>
-
-            <h2
-              style={{
-                fontSize: "28px",
-                fontWeight: "900",
-              }}
-            >
-              {currentProblem}
-            </h2>
-
-            <div style={styles.desc}>
-
-              <h3>Description</h3>
-
-              <p>
-                {
-                  problems[
-                    currentProblem
-                  ].description
-                }
-              </p>
-
-            </div>
-
-            <div style={styles.example}>
-
-              <h3>Example</h3>
-
-              <pre>
-                {
-                  problems[
-                    currentProblem
-                  ].example
-                }
-              </pre>
-
-            </div>
-
-          </>
-        )}
-
-        {/* INPUT */}
-
-        <div>
-
-          <h3
-            style={{
-              marginBottom: "10px",
-            }}
-          >
-            Input
-          </h3>
-
-          <textarea
-            value={input}
-            onChange={(e) =>
-              setInput(
-                e.target.value
-              )
-            }
-            style={styles.textarea}
-            disabled={isLocked}
-          />
-
-        </div>
-
-        {/* BUTTONS */}
-
-        <div style={styles.buttons}>
-
-          <button
-            onClick={runCode}
-            style={
-              styles.buttonPrimary
-            }
-            disabled={isLocked}
-          >
-            Run
-          </button>
-
-          <button
-            onClick={runTests}
-            style={
-              styles.buttonSecondary
-            }
-            disabled={isLocked}
-          >
-            Run Tests
-          </button>
-
-          <button
-            onClick={submitCode}
-            style={
-              styles.buttonPrimary
-            }
-            disabled={isLocked}
-          >
-            Submit
-          </button>
-
-        </div>
-
-        {/* TEST RESULTS */}
-
-        {results.length > 0 && (
-
-          <div style={styles.testResults}>
-
-            <h3>
-              Test Results
-            </h3>
-
-            {results.map((r, i) => (
-
+          {problems.map(
+            (problem) => (
               <div
-                key={i}
+                key={problem._id}
+                onClick={() =>
+                  setCurrentProblem(
+                    problem
+                  )
+                }
                 style={{
-                  padding: "14px",
-                  marginTop: "12px",
-                  borderRadius: "16px",
+                  ...styles.problemItem,
 
                   background:
-                    r.passed
-                      ? "rgba(16,185,129,0.2)"
-                      : "rgba(239,68,68,0.2)",
-
-                  border:
-                    r.passed
-                      ? "1px solid rgba(16,185,129,0.4)"
-                      : "1px solid rgba(239,68,68,0.4)",
+                    currentProblem?._id ===
+                    problem._id
+                      ? "linear-gradient(135deg,#7c3aed,#d946ef)"
+                      : "rgba(255,255,255,0.05)",
                 }}
               >
+                {problem.title}
+              </div>
+            )
+          )}
+        </div>
 
-                <strong>
-                  Test {i + 1}
-                </strong>
+        {/* CENTER */}
 
-                <br />
+        <div style={styles.center}>
+          <div style={styles.editorTop}>
+            <div>
+              Problem:
+              {" "}
+              {currentProblem.title}
+            </div>
 
-                {r.passed
-                  ? "✅ Passed"
+            <select
+              value={language}
+              onChange={(e) =>
+                setLanguage(
+                  e.target.value
+                )
+              }
+              style={styles.select}
+            >
+              <option value="cpp">
+                C++
+              </option>
+
+              <option value="python">
+                Python
+              </option>
+
+              <option value="java">
+                Java
+              </option>
+            </select>
+          </div>
+
+          {/* EDITOR */}
+
+          <div
+            style={
+              styles.editorContainer
+            }
+          >
+            <Editor
+              height="100%"
+              language={
+                language
+              }
+              theme="vs-dark"
+              value={code}
+              onChange={(
+                value
+              ) =>
+                setCode(
+                  value || ""
+                )
+              }
+            />
+          </div>
+
+          {/* OUTPUT */}
+
+          <div
+            style={
+              styles.outputCard
+            }
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent:
+                  "space-between",
+                alignItems:
+                  "center",
+                marginBottom: "10px",
+              }}
+            >
+              <h3
+                style={{
+                  margin: 0,
+                }}
+              >
+                Output
+              </h3>
+
+              <div
+                style={{
+                  background:
+                    "rgba(124,58,237,0.18)",
+                  color: "#c084fc",
+                  padding:
+                    "5px 10px",
+                  borderRadius:
+                    "999px",
+                  fontSize:
+                    "11px",
+                  fontWeight:
+                    "700",
+                }}
+              >
+                Live
+              </div>
+            </div>
+
+            <pre
+              style={
+                styles.outputText
+              }
+            >
+              {output}
+            </pre>
+          </div>
+
+          {/* SUBMISSION RESULT */}
+
+          {submissionResult && (
+            <div
+              style={{
+                background:
+                  submissionResult.finalStatus ===
+                  "Accepted"
+                    ? "rgba(34,197,94,0.12)"
+                    : "rgba(239,68,68,0.12)",
+
+                border:
+                  submissionResult.finalStatus ===
+                  "Accepted"
+                    ? "1px solid rgba(34,197,94,0.35)"
+                    : "1px solid rgba(239,68,68,0.35)",
+
+                borderRadius:
+                  "20px",
+
+                padding: "18px",
+              }}
+            >
+              <h2>
+                {submissionResult.finalStatus ===
+                "Accepted"
+                  ? "✅ Accepted"
                   : "❌ Failed"}
+              </h2>
 
-                <br />
-
-                Expected:
+              <div>
+                Score:
                 {" "}
-                {r.expected}
-
-                <br />
-
-                Got:
-                {" "}
-                {r.actual}
-
+                {
+                  submissionResult.score ||
+                  0
+                }
+                %
               </div>
 
-            ))}
+              <div>
+                Passed:
+                {" "}
+                {
+                  submissionResult.passed ||
+                  0
+                }
+                /
+                {
+                  submissionResult.total ||
+                  0
+                }
+              </div>
+            </div>
+          )}
+        </div>
 
+        {/* RIGHT PANEL */}
+
+        <div style={styles.rightPanel}>
+          <h1
+            style={
+              styles.problemTitle
+            }
+          >
+            {
+              currentProblem.title
+            }
+          </h1>
+
+          <div style={styles.infoCard}>
+            <h3>Description</h3>
+
+            <p>
+              {
+                currentProblem.description
+              }
+            </p>
           </div>
 
-        )}
+          <div style={styles.infoCard}>
+            <h3>Example</h3>
 
-        {/* SUBMISSION */}
+            <pre>
+              Input:
+              {"\n"}
+              {
+                currentProblem
+                  .sampleIO?.[0]
+                  ?.input
+              }
 
-        {submission && (
+              {"\n\n"}
+              Output:
+              {"\n"}
+              {
+                currentProblem
+                  .sampleIO?.[0]
+                  ?.output
+              }
+            </pre>
+          </div>
 
-          <div style={styles.testResults}>
-
-            <h3>
-              Submission Result
+          <div>
+            <h3
+              style={{
+                marginBottom: "10px",
+              }}
+            >
+              Input
             </h3>
 
-            <div>
-              Status:
-              {" "}
-              <b>
-                {
-                  submission.finalStatus
-                }
-              </b>
-            </div>
-
-            <div>
-              Score:
-              {" "}
-              {submission.score}%
-            </div>
-
-            <div>
-              Passed:
-              {" "}
-              {submission.passed}/
-              {submission.total}
-            </div>
-
+            <textarea
+              value={input}
+              onChange={(e) =>
+                setInput(
+                  e.target.value
+                )
+              }
+              style={styles.textarea}
+            />
           </div>
 
-        )}
+          {/* BUTTONS */}
 
+          <div style={styles.buttonRow}>
+            <button
+              style={
+                styles.primaryButton
+              }
+              onClick={runCode}
+            >
+              Run
+            </button>
+
+            <button
+              style={
+                styles.secondaryButton
+              }
+              onClick={() =>
+                setAiOpen(true)
+              }
+            >
+              Open AI
+            </button>
+
+            <button
+              style={{
+                ...styles.primaryButton,
+
+                opacity:
+                  submitting
+                    ? 0.7
+                    : 1,
+              }}
+              onClick={
+                submitCode
+              }
+            >
+              {submitting
+                ? "Submitting..."
+                : "Submit"}
+            </button>
+          </div>
+        </div>
       </div>
 
+      {/* FLOATING AI */}
+
+      <div
+        style={{
+          ...styles.aiFloating,
+
+          height: aiOpen
+            ? "430px"
+            : "65px",
+        }}
+      >
+        <div
+          style={styles.aiTop}
+          onClick={() =>
+            setAiOpen(!aiOpen)
+          }
+        >
+          <div>
+            🤖 CodeArena AI
+          </div>
+
+          <div>
+            {aiOpen ? "−" : "+"}
+          </div>
+        </div>
+
+        {aiOpen && (
+          <>
+            <div
+              style={
+                styles.aiResponse
+              }
+            >
+              <pre
+                style={{
+                  whiteSpace:
+                    "pre-wrap",
+
+                  lineHeight:
+                    "1.7",
+
+                  margin: 0,
+                }}
+              >
+                {aiResponse}
+              </pre>
+            </div>
+
+            <div
+              style={
+                styles.aiButtons
+              }
+            >
+              <button
+                style={
+                  styles.aiButton
+                }
+                disabled={
+                  aiLoading
+                }
+                onClick={() =>
+                  handleAI(
+                    "Explain the error in this code"
+                  )
+                }
+              >
+                Explain Error
+              </button>
+
+              <button
+                style={
+                  styles.aiButton
+                }
+                disabled={
+                  aiLoading
+                }
+                onClick={() =>
+                  handleAI(
+                    "Give hints only"
+                  )
+                }
+              >
+                Give Hint
+              </button>
+
+              <button
+                style={
+                  styles.aiButton
+                }
+                disabled={
+                  aiLoading
+                }
+                onClick={() =>
+                  handleAI(
+                    "Optimize this code"
+                  )
+                }
+              >
+                Optimize
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
 
+/* ================= STYLES ================= */
+
 const styles = {
-  container: {
-    display: "grid",
-    gridTemplateColumns:
-      "260px 1fr 360px",
-    gridTemplateRows:
-      "70px 1fr",
+  page: {
     height: "100vh",
-
     background:
-      "linear-gradient(to bottom right, #0b1120, #111827)",
-
+      "linear-gradient(to bottom right,#020617,#0f172a)",
+    padding: "14px",
     color: "#fff",
-
-    gap: "18px",
-
-    padding: "18px",
-
     overflow: "hidden",
+    display: "flex",
+    flexDirection: "column",
+    gap: "14px",
   },
 
-  backBar: {
-    gridColumn: "1 / -1",
-
+  header: {
+    height: "70px",
+    background:
+      "rgba(15,23,42,0.95)",
+    borderRadius: "20px",
     display: "flex",
-
     alignItems: "center",
-
     justifyContent:
       "space-between",
-
-    background:
-      "rgba(17,24,39,0.9)",
-
-    border:
-      "1px solid rgba(255,255,255,0.08)",
-
-    borderRadius: "24px",
-
-    padding: "16px 24px",
-
-    backdropFilter:
-      "blur(16px)",
-
-    boxShadow:
-      "0 10px 40px rgba(0,0,0,0.35)",
+    padding: "0 18px",
   },
 
   backButton: {
-    padding: "12px 18px",
-
-    borderRadius: "16px",
-
     background:
       "linear-gradient(135deg,#7c3aed,#d946ef)",
-
     border: "none",
-
     color: "#fff",
-
+    padding: "12px 18px",
+    borderRadius: "14px",
     cursor: "pointer",
-
     fontWeight: "700",
+  },
 
-    fontSize: "14px",
+  timer: {
+    fontWeight: "700",
+  },
 
-    transition: "0.25s",
+  body: {
+    flex: 1,
+    display: "grid",
+    gridTemplateColumns:
+      "180px 1fr 280px",
+    gap: "14px",
   },
 
   sidebar: {
     background:
-      "rgba(17,24,39,0.9)",
-
-    border:
-      "1px solid rgba(255,255,255,0.08)",
-
-    borderRadius: "30px",
-
-    padding: "24px",
-
-    overflowY: "auto",
-
-    backdropFilter:
-      "blur(16px)",
-
-    boxShadow:
-      "0 10px 40px rgba(0,0,0,0.35)",
-  },
-
-  problem: {
+      "rgba(15,23,42,0.95)",
+    borderRadius: "20px",
     padding: "16px",
-
-    marginTop: "10px",
-
-    background:
-      "rgba(255,255,255,0.05)",
-
-    borderRadius: "18px",
-
-    cursor: "pointer",
-
-    transition:
-      "all 0.25s ease",
-
-    border:
-      "1px solid rgba(255,255,255,0.05)",
-
-    fontWeight: "600",
   },
 
-  main: {
-    display: "grid",
-
-    gridTemplateRows:
-      "70px 1fr 220px",
-
-    gap: "14px",
+  sidebarTitle: {
+    marginBottom: "20px",
   },
 
-  topbar: {
-    display: "flex",
-
-    justifyContent:
-      "space-between",
-
-    alignItems: "center",
-
-    background:
-      "rgba(17,24,39,0.9)",
-
-    border:
-      "1px solid rgba(255,255,255,0.08)",
-
-    borderRadius: "24px",
-
-    padding: "0 24px",
-
-    backdropFilter:
-      "blur(16px)",
-
-    boxShadow:
-      "0 10px 40px rgba(0,0,0,0.35)",
-
-    fontWeight: "700",
-
-    fontSize: "18px",
-  },
-
-  select: {
-    padding: "10px 14px",
-
+  problemItem: {
+    padding: "14px",
     borderRadius: "14px",
-
-    background: "#0f172a",
-
-    color: "#fff",
-
-    border:
-      "1px solid rgba(255,255,255,0.1)",
-
-    outline: "none",
-
-    fontWeight: "600",
+    cursor: "pointer",
+    marginBottom: "10px",
+    fontWeight: "700",
   },
 
-  editor: {
-    borderRadius: "28px",
-
-    overflow: "hidden",
-
-    border:
-      "1px solid rgba(255,255,255,0.08)",
-
-    boxShadow:
-      "0 10px 40px rgba(0,0,0,0.35)",
-  },
-
-  output: {
-    background:
-      "rgba(17,24,39,0.9)",
-
-    border:
-      "1px solid rgba(255,255,255,0.08)",
-
-    borderRadius: "28px",
-
-    padding: "20px",
-
-    overflowY: "auto",
-
-    backdropFilter:
-      "blur(16px)",
-
-    boxShadow:
-      "0 10px 40px rgba(0,0,0,0.35)",
-  },
-
-  right: {
-    background:
-      "rgba(17,24,39,0.9)",
-
-    border:
-      "1px solid rgba(255,255,255,0.08)",
-
-    borderRadius: "30px",
-
-    padding: "24px",
-
-    display: "flex",
-
-    flexDirection: "column",
-
-    gap: "18px",
-
-    overflowY: "auto",
-
-    backdropFilter:
-      "blur(16px)",
-
-    boxShadow:
-      "0 10px 40px rgba(0,0,0,0.35)",
-  },
-
-  desc: {
-    background:
-      "rgba(255,255,255,0.04)",
-
-    borderRadius: "22px",
-
-    padding: "18px",
-
-    border:
-      "1px solid rgba(255,255,255,0.06)",
-
-    lineHeight: "1.7",
-  },
-
-  example: {
-    background:
-      "rgba(255,255,255,0.04)",
-
-    borderRadius: "22px",
-
-    padding: "18px",
-
-    border:
-      "1px solid rgba(255,255,255,0.06)",
-  },
-
-  textarea: {
-    background: "#020617",
-
-    color: "#fff",
-
-    padding: "16px",
-
-    borderRadius: "18px",
-
-    border:
-      "1px solid rgba(255,255,255,0.08)",
-
-    minHeight: "120px",
-
-    outline: "none",
-
-    resize: "none",
-
-    fontSize: "14px",
-  },
-
-  buttons: {
+  center: {
     display: "grid",
-
-    gridTemplateColumns:
-      "repeat(3,1fr)",
-
+    gridTemplateRows:
+      "60px 1fr 170px auto",
     gap: "12px",
   },
 
-  buttonPrimary: {
+  editorTop: {
     background:
-      "linear-gradient(135deg,#7c3aed,#d946ef)",
+      "rgba(15,23,42,0.95)",
+    borderRadius: "18px",
+    padding: "0 18px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent:
+      "space-between",
+  },
 
-    padding: "14px",
-
+  select: {
+    background: "#020617",
+    color: "#fff",
     border: "none",
-
-    borderRadius: "16px",
-
-    color: "#fff",
-
-    fontWeight: "700",
-
-    cursor: "pointer",
-
-    transition: "0.25s",
-
-    boxShadow:
-      "0 10px 30px rgba(124,58,237,0.35)",
+    padding: "10px",
+    borderRadius: "10px",
   },
 
-  buttonSecondary: {
+  editorContainer: {
+    borderRadius: "20px",
+    overflow: "hidden",
+  },
+
+  outputCard: {
     background:
-      "rgba(255,255,255,0.08)",
-
-    padding: "14px",
-
-    border:
-      "1px solid rgba(255,255,255,0.08)",
-
-    borderRadius: "16px",
-
-    color: "#fff",
-
-    fontWeight: "700",
-
-    cursor: "pointer",
+      "rgba(15,23,42,0.95)",
+    borderRadius: "20px",
+    padding: "16px",
+    overflowY: "auto",
   },
 
-  testResults: {
-    marginTop: "10px",
+  outputText: {
+    whiteSpace: "pre-wrap",
+    margin: 0,
+  },
 
+  rightPanel: {
+    background:
+      "rgba(15,23,42,0.95)",
+    borderRadius: "20px",
+    padding: "16px",
+    overflowY: "auto",
+    display: "flex",
+    flexDirection: "column",
+    gap: "14px",
+  },
+
+  problemTitle: {
+    margin: 0,
+    fontSize: "34px",
+    fontWeight: "900",
+  },
+
+  infoCard: {
     background:
       "rgba(255,255,255,0.04)",
+    borderRadius: "16px",
+    padding: "14px",
+    lineHeight: "1.7",
+  },
 
+  textarea: {
+    width: "100%",
+    minHeight: "100px",
+    background: "#020617",
+    color: "#fff",
+    border: "none",
+    borderRadius: "14px",
+    padding: "14px",
+    resize: "none",
+    outline: "none",
+  },
+
+  buttonRow: {
+    display: "grid",
+    gridTemplateColumns:
+      "repeat(3,1fr)",
+    gap: "10px",
+  },
+
+  primaryButton: {
+    background:
+      "linear-gradient(135deg,#7c3aed,#d946ef)",
+    border: "none",
+    color: "#fff",
+    padding: "14px",
+    borderRadius: "14px",
+    cursor: "pointer",
+    fontWeight: "700",
+  },
+
+  secondaryButton: {
+    background:
+      "rgba(255,255,255,0.08)",
+    border: "none",
+    color: "#fff",
+    padding: "14px",
+    borderRadius: "14px",
+    cursor: "pointer",
+    fontWeight: "700",
+  },
+
+  aiFloating: {
+    position: "fixed",
+    right: "20px",
+    bottom: "20px",
+    width: "330px",
+    background:
+      "linear-gradient(135deg,#4c1d95,#7c3aed)",
     borderRadius: "22px",
+    overflow: "hidden",
+    zIndex: 999,
+    transition: "0.3s",
+    display: "flex",
+    flexDirection: "column",
+    boxShadow:
+      "0 20px 60px rgba(0,0,0,0.45)",
+  },
 
-    padding: "18px",
+  aiTop: {
+    height: "65px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent:
+      "space-between",
+    padding: "0 18px",
+    cursor: "pointer",
+    fontWeight: "800",
+  },
 
-    border:
-      "1px solid rgba(255,255,255,0.08)",
+  aiResponse: {
+    flex: 1,
+    overflowY: "auto",
+    background:
+      "rgba(255,255,255,0.08)",
+    margin: "0 14px",
+    borderRadius: "14px",
+    padding: "14px",
+    fontSize: "13px",
+  },
+
+  aiButtons: {
+    display: "grid",
+    gap: "8px",
+    padding: "14px",
+  },
+
+  aiButton: {
+    background:
+      "rgba(255,255,255,0.12)",
+    border: "none",
+    color: "#fff",
+    padding: "12px",
+    borderRadius: "12px",
+    cursor: "pointer",
+    fontWeight: "700",
   },
 };
