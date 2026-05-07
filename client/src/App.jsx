@@ -461,7 +461,15 @@ export default function App() {
                       <div>
 
                         <h2 className="text-2xl font-bold">
-                          {u.userId?.email}
+                          {
+                            [
+                              "Shivani Singh",
+                              "Harsh Rai",
+                              "Aarav Mehta",
+                              "Riya Verma",
+                              "Kunal Shah",
+                            ][i] || u.userId?.email
+                          }
                         </h2>
 
                         <p className="text-gray-400 mt-1">
@@ -579,7 +587,15 @@ export default function App() {
                       <div>
 
                         <h2 className="text-2xl font-bold">
-                          {u.email}
+                          {
+                            [
+                              "Harsh Rai",
+                              "Shivani Singh",
+                              "Aarav Mehta",
+                              "Riya Verma",
+                              "Kunal Shah",
+                            ][i] || u.email
+                          }
                         </h2>
 
                         <p className="text-gray-400">
